@@ -22,6 +22,7 @@ public class StackInfo {
   }
 
   public class Frame {
+
     String methodName;
     List<ApplicationBean> parameters;
 

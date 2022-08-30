@@ -15,25 +15,36 @@ class GarbageCollectorImplementationTest {
 
     @Test
     public void unlinkedObjectsCollectionTest() {
-        // GIVEN
+        // GIVEN  компоненты приложений
+//      создаем мапу - куда складываем в качесве ключа (имя) - ссылку на объект (ApplicationBean)
         final ApplicationBean restControllerBean = initializeControllerBean();
-        final ApplicationBean requestBean = initializeHttpRequestBeanBean();
-
+//        в итоге получаем мапу из 3 пар , где в 2х парах обект-nullи 1на пара с полным объектом
+       final ApplicationBean requestBean = initializeHttpRequestBeanBean();
+//        в итоге получаем мапу из 2 пар , где в 2х парах обект-nullи
+       // создаем кучу типа HashMap
         Map<String, ApplicationBean> heap = new HashMap<>();
+//в кучу кладем пару ключ-"controller", объект restControllerBean, в котором уже лежит 3 пары
         heap.putAll(getMemoryFootprint("controller", restControllerBean));
+//в кучу кладем пару ключ-"запрос", объект requestBean, в котором уже лежит 2 пары
         heap.putAll(getMemoryFootprint("request", requestBean));
+    // для проверки мусора собираем все объекты  из объекта запросов в лист вызовом метода
         List<ApplicationBean> expectedGarbage = new ArrayList<>(getChildren(requestBean));
 
+       // создаем стек
         final HeapInfo heapInfo = new HeapInfo(heap);
         StackInfo stack = new StackInfo();
+      //  кладем в стек инфо про  1й метод
         stack.push("main");
+        //  кладем в стек инфо про  2й метод - обработчик запроса с объектом
         stack.push("handleRequest", restControllerBean);
 
-        // WHEN
+        // WHEN надо написать в мусорщике метод сбора в арайлист пустых объектов из хипа и стека
+
         final List<ApplicationBean> actualGarbage = gc.collect(heapInfo, stack);
 
-        // THEN
+        // THEN сравниваем длину ожидаемого мусора -размер экпектед арайлиста и актуального мусора
         Assertions.assertEquals(expectedGarbage.size(), actualGarbage.size());
+// проверим что совпадает содеражние
         Assertions.assertTrue(actualGarbage.containsAll(expectedGarbage));
     }
 
@@ -237,6 +248,10 @@ class GarbageCollectorImplementationTest {
     }
 
     private ApplicationBean initializeHttpRequestBeanBean() {
+//         создаем объект -запрос Боба
+//         куда кладем пустой объект "заголовок" под ключем "headers"
+//     куда кладем пустой объект "тело" под ключем "body"
+
         final ApplicationBean requestBean = new ApplicationBean();
         final ApplicationBean headers = new ApplicationBean();
         final ApplicationBean body = new ApplicationBean();
@@ -269,7 +284,7 @@ class GarbageCollectorImplementationTest {
 
         return repository;
     }
-
+//  получаем объем памяти из кучи
     private Map<String, ApplicationBean> getMemoryFootprint(String beanName, ApplicationBean bean) {
         Map<String, ApplicationBean> heap = new HashMap<>();
         heap.put(beanName, bean);
