@@ -5,65 +5,73 @@ import java.util.*;
 
 
 public class GarbageCollectorImplementation implements GarbageCollector {
-  @Override
-  public List<ApplicationBean> collect(HeapInfo heap, StackInfo stack) {
-       Map<String, ApplicationBean> beans = heap.getBeans();
-    Map<String, ApplicationBean> tmp=beans;
-    Deque<StackInfo.Frame> frames = stack.getStack();
-    List<String> links = getParametrsFrames(frames);
-        for (String l: links) {
-    if (beans.containsKey(l)){tmp.remove(l);}
-     tmp=checkForChildLinks(tmp,l);
+    @Override
+    public List<ApplicationBean> collect(HeapInfo heap, StackInfo stack) {
+        List<ApplicationBean> garbage = new ArrayList<>( );
+        Map<String, ApplicationBean> beans = heap.getBeans( );
+        Deque<StackInfo.Frame> frames = stack.getStack( );
+        Set<ApplicationBean> steckBeans = getParametrsFrames(frames);
+       Set<ApplicationBean> heapBeans = getBeansHeap(beans);
+        for (ApplicationBean heapBean : heapBeans) {
+            if (!checkLiveBeans(steckBeans, heapBean)) {
+                garbage.add(heapBean);
+            }
+        }
+        return garbage;
     }
-      List<ApplicationBean> garbage=new ArrayList<>(  );
-    Map<String, ApplicationBean> finalTmp = tmp;
-     tmp.forEach((k, v)->garbage.add(finalTmp.get(k )));
-            return garbage ;
-  }
 
 
-  private List<String> getParametrsFrames(Deque<StackInfo.Frame> frames){
-    List<String> links =new ArrayList<>();
-    while (!frames.isEmpty( )) {
-      List<ApplicationBean> parametrs = frames.pollFirst().getParameters( );
-      for (ApplicationBean parametr : parametrs) {
-        Map<String, ApplicationBean> mark = parametr.getFieldValues();
-      mark.forEach((k, v)->links.add(k));
-        List<String> linksChildren = getLinksChildren(mark);
-        linksChildren.forEach(x->links.add(x));
-      }
-
+    private Set<ApplicationBean> getParametrsFrames(Deque<StackInfo.Frame> frames) {
+        Set<ApplicationBean> parametrs = new HashSet<>( );
+        for (StackInfo.Frame frame : frames) {
+            for (ApplicationBean bean : frame.parameters) {
+                parametrs.addAll(getChildren(bean));
+            }
+        }
+        return parametrs;
     }
-    return links;
-  }
 
-  private List<String> getLinksChildren(Map<String, ApplicationBean> mark) {
-   Set<String> links =  mark.keySet();
-    List<String> lCh=new ArrayList<>();
-      for (String key: links) {
-      Map<String, ApplicationBean> childs= mark.get(key).getFieldValues();
-      Set<String> linksChild =  childs.keySet();
-      for ( String child:linksChild) {
-        if (!childs.get(child).equals(0)){ lCh.add(child); }
-      }
+    private Set<ApplicationBean> getBeansHeap(Map<String, ApplicationBean> beans) {
+        Set<ApplicationBean> parametrs = new HashSet<>( );
+        for (Map.Entry<String, ApplicationBean> entry : beans.entrySet( )) {
+            parametrs.addAll(getChildren(entry.getValue( )));
+        }        return parametrs;
     }
-   return lCh;
-  }
+
+        private Set<ApplicationBean> getChildren(ApplicationBean bean) {
+        Set<ApplicationBean> childrenBean = new HashSet<>();
+          childrenBean.add(bean);
+        if (bean.getFieldValues().isEmpty()){return childrenBean;}
+            bean.getFieldValues()
+                    .forEach(
+                            (key, value) -> {
+                              if (!childrenBean.contains(value)) {childrenBean.addAll(getChildren(value));}
+                            });
+
+        return childrenBean;
+    }
 
 
-  private Map<String, ApplicationBean> checkForChildLinks(Map<String, ApplicationBean> tmpChild, String link){
-    Set<String> links =  tmpChild.keySet();
-       List<String> del=new ArrayList<>();
-    for ( String l:links) {
-      Map<String, ApplicationBean> childs= tmpChild.get(l).getFieldValues();
-      if (childs.containsKey(link)){del.add(l);}
-          }
-    del.forEach(x->tmpChild.remove(x));
-    return tmpChild;
-  }
 
+
+    private boolean checkLiveBeans(Set<ApplicationBean> beans, ApplicationBean bean) {
+        int country = 0;
+        for (ApplicationBean be : beans) {
+            if (be == bean) {
+                country++;
+            }
+        }
+        if (country > 0) {
+            return true;
+        }
+        return false;
+    }
 
 
 }
+
+
+
+
 
 
