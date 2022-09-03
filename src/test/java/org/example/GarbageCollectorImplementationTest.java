@@ -1,9 +1,6 @@
 package org.example;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -23,12 +20,10 @@ class GarbageCollectorImplementationTest {
         heap.putAll(getMemoryFootprint("controller", restControllerBean));
         heap.putAll(getMemoryFootprint("request", requestBean));
         List<ApplicationBean> expectedGarbage = new ArrayList<>(getChildren(requestBean));
-
         final HeapInfo heapInfo = new HeapInfo(heap);
         StackInfo stack = new StackInfo();
         stack.push("main");
         stack.push("handleRequest", restControllerBean);
-
         // WHEN
         final List<ApplicationBean> actualGarbage = gc.collect(heapInfo, stack);
 
@@ -223,6 +218,7 @@ class GarbageCollectorImplementationTest {
         // THEN
         Assertions.assertEquals(1, actualGarbage.size());
         Assertions.assertSame(garbage, actualGarbage.get(0));
+
     }
 
     private ApplicationBean initializeControllerBean() {
@@ -292,7 +288,6 @@ class GarbageCollectorImplementationTest {
                 (key, value) -> {
                     garbage.addAll(getChildren(value));
                 });
-
         return garbage;
     }
 }
