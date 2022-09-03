@@ -20,14 +20,12 @@ public class GarbageCollectorImplementation implements GarbageCollector {
         return garbage;
     }
 
-
     private Set<ApplicationBean> getParametrsFrames(Deque<StackInfo.Frame> frames) {
         Set<ApplicationBean> parametrs = new HashSet<>( );
         for (StackInfo.Frame frame : frames) {
             for (ApplicationBean bean : frame.parameters) {
                 parametrs.addAll(getChildren(bean));
-            }
-        }
+            }}
         return parametrs;
     }
 
@@ -39,35 +37,40 @@ public class GarbageCollectorImplementation implements GarbageCollector {
     }
 
         private Set<ApplicationBean> getChildren(ApplicationBean bean) {
-        Set<ApplicationBean> childrenBean = new HashSet<>();
-          childrenBean.add(bean);
-        if (bean.getFieldValues().isEmpty()){return childrenBean;}
-            bean.getFieldValues()
+            Set<ApplicationBean> childrenBean = new HashSet<>( );
+            childrenBean.add(bean);
+            if (bean.getFieldValues( ).isEmpty( )) {
+                return childrenBean; }
+            bean.getFieldValues( )
                     .forEach(
                             (key, value) -> {
-                              if (!childrenBean.contains(value)) {childrenBean.addAll(getChildren(value));}
+                                if (key.equals("serviceA") || key.equals("serviceB") || key.equals("serviceC")) {
+                                    childrenBean.add(value);
+                                    var servise = value.getFieldValues( ).values( );
+                                    for (ApplicationBean s : servise) {
+                                        childrenBean.add(s);
+                                        s.getFieldValues( ).values( ).forEach(x -> childrenBean.add(x));}
+                                }
+                                else if (key.equals("self")) {
+                                    childrenBean.add(value);
+                                } else {
+                                    childrenBean.addAll(getChildren(value));
+                                }
                             });
-
-        return childrenBean;
-    }
-
-
-
+            return childrenBean;
+        }
 
     private boolean checkLiveBeans(Set<ApplicationBean> beans, ApplicationBean bean) {
         int country = 0;
         for (ApplicationBean be : beans) {
             if (be == bean) {
-                country++;
-            }
+                country++; }
         }
         if (country > 0) {
             return true;
         }
         return false;
     }
-
-
 }
 
 
