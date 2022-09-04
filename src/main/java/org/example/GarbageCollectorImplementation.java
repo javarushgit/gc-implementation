@@ -5,30 +5,30 @@ public class GarbageCollectorImplementation implements GarbageCollector {
 
   @Override
   public List<ApplicationBean> collect(HeapInfo heap, StackInfo stack) {
-    Map<String, ApplicationBean> beans = heap.getBeans();
-    Deque<StackInfo.Frame> frames = stack.getStack();
-    return getGarbage(getAliveBeans(frames),getBeans(beans));
-  }
-
-  public Set<ApplicationBean> getBeans( Map<String, ApplicationBean> beans) {
-    Set<ApplicationBean> beansSet = new HashSet<>();
-    for (Map.Entry<String, ApplicationBean> beanEntry : beans.entrySet()) {
-        beansSet.add(beanEntry.getValue());
-    }
-    return beansSet;
-  }
-
-  public Set<ApplicationBean> getAliveBeans(Deque<StackInfo.Frame> frames) {
+    final Map<String, ApplicationBean> beans = heap.getBeans();
+    final Deque<StackInfo.Frame> frames = stack.getStack();
+    Set<ApplicationBean> beanSet = new HashSet<>();
     Set<ApplicationBean> aliveBeansSet = new HashSet<>();
+    getBeans(beans, beanSet);
+    getAliveBeans(frames, aliveBeansSet);
+    return getGarbage(aliveBeansSet, beanSet);
+  }
+
+  private void getBeans(final Map<String, ApplicationBean> beans, Set<ApplicationBean> beanSet) {
+    for (Map.Entry<String, ApplicationBean> beanEntry : beans.entrySet()) {
+        beanSet.add(beanEntry.getValue());
+    }
+  }
+
+  private void getAliveBeans(final Deque<StackInfo.Frame> frames, Set<ApplicationBean> aliveBeanSet) {
     for (StackInfo.Frame frame : frames) {
       for (ApplicationBean applicationBean : frame.getParameters()) {
-        aliveBeansSet = getChild(applicationBean, aliveBeansSet);
+        getChild(applicationBean, aliveBeanSet);
       }
     }
-    return aliveBeansSet;
   }
 
-  public Set<ApplicationBean> getChild(ApplicationBean bean, Set<ApplicationBean> aliveBeansSet) {
+  private Set<ApplicationBean> getChild(ApplicationBean bean, Set<ApplicationBean> aliveBeansSet) {
     aliveBeansSet.add(bean);
       for (ApplicationBean applicationBean : bean.getFieldValues().values()) {
         if (!aliveBeansSet.contains(applicationBean))
@@ -37,9 +37,9 @@ public class GarbageCollectorImplementation implements GarbageCollector {
     return aliveBeansSet;
   }
 
-  public List<ApplicationBean> getGarbage(Set<ApplicationBean> aliveBeans, Set<ApplicationBean> beans) {
-    beans.removeAll(aliveBeans);
-    return new ArrayList<>(beans);
+  private List<ApplicationBean> getGarbage(Set<ApplicationBean> aliveBeanSet, Set<ApplicationBean> beanSet) {
+    beanSet.removeAll(aliveBeanSet);
+    return new ArrayList<>(beanSet);
   }
 }
 
