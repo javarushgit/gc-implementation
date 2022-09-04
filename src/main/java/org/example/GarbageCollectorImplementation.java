@@ -11,7 +11,7 @@ public class GarbageCollectorImplementation implements GarbageCollector {
         Map<String, ApplicationBean> beans = heap.getBeans( );
         Deque<StackInfo.Frame> frames = stack.getStack( );
         Set<ApplicationBean> steckBeans = getParametrsFrames(frames);
-       Set<ApplicationBean> heapBeans = getBeansHeap(beans);
+        Set<ApplicationBean> heapBeans = getBeansHeap(beans);
         for (ApplicationBean heapBean : heapBeans) {
             if (!checkLiveBeans(steckBeans, heapBean)) {
                 garbage.add(heapBean);
@@ -30,10 +30,11 @@ public class GarbageCollectorImplementation implements GarbageCollector {
     }
 
     private Set<ApplicationBean> getBeansHeap(Map<String, ApplicationBean> beans) {
-        Set<ApplicationBean> parametrs = new HashSet<>( );
+        Set<ApplicationBean> listOfBeans = new HashSet<>( );
         for (Map.Entry<String, ApplicationBean> entry : beans.entrySet( )) {
-            parametrs.addAll(getChildren(entry.getValue( )));
-        }        return parametrs;
+            listOfBeans.addAll(getChildren(entry.getValue( )));
+        }
+        return listOfBeans;
     }
 
         private Set<ApplicationBean> getChildren(ApplicationBean bean) {
@@ -46,10 +47,11 @@ public class GarbageCollectorImplementation implements GarbageCollector {
                             (key, value) -> {
                                 if (key.equals("serviceA") || key.equals("serviceB") || key.equals("serviceC")) {
                                     childrenBean.add(value);
-                                    var servise = value.getFieldValues( ).values( );
-                                    for (ApplicationBean s : servise) {
+                                    Collection<ApplicationBean> service = value.getFieldValues( ).values( );
+                                    for (ApplicationBean s : service) {
                                         childrenBean.add(s);
-                                        s.getFieldValues( ).values( ).forEach(x -> childrenBean.add(x));}
+                                        s.getFieldValues( ).values( ).forEach(x -> childrenBean.add(x));
+                                    }
                                 }
                                 else if (key.equals("self")) {
                                     childrenBean.add(value);
@@ -66,10 +68,7 @@ public class GarbageCollectorImplementation implements GarbageCollector {
             if (be == bean) {
                 country++; }
         }
-        if (country > 0) {
-            return true;
-        }
-        return false;
+        return country > 0;
     }
 }
 
