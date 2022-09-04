@@ -28,18 +28,18 @@ public class GarbageCollectorImplementation implements GarbageCollector {
     return aliveBeansSet;
   }
 
-  public Set<ApplicationBean> getChild(ApplicationBean bean, Set<ApplicationBean> stackSet) {
-    stackSet.add(bean);
+  public Set<ApplicationBean> getChild(ApplicationBean bean, Set<ApplicationBean> aliveBeansSet) {
+    aliveBeansSet.add(bean);
       for (ApplicationBean applicationBean : bean.getFieldValues().values()) {
-        if (!stackSet.contains(applicationBean))
-          stackSet.addAll(getChild(applicationBean, stackSet));
+        if (!aliveBeansSet.contains(applicationBean))
+          aliveBeansSet.addAll(getChild(applicationBean, aliveBeansSet));
       }
-    return stackSet;
+    return aliveBeansSet;
   }
 
-  public List<ApplicationBean> getGarbage(Set<ApplicationBean> stack, Set<ApplicationBean> heap) {
-    heap.removeAll(stack);
-    return new ArrayList<>(heap);
+  public List<ApplicationBean> getGarbage(Set<ApplicationBean> aliveBeans, Set<ApplicationBean> beans) {
+    beans.removeAll(aliveBeans);
+    return new ArrayList<>(beans);
   }
 }
 
