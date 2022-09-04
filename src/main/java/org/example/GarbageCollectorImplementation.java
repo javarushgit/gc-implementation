@@ -7,25 +7,29 @@ public class GarbageCollectorImplementation implements GarbageCollector {
   public List<ApplicationBean> collect(HeapInfo heap, StackInfo stack) {
     final Map<String, ApplicationBean> beans = heap.getBeans();
     final Deque<StackInfo.Frame> frames = stack.getStack();
-    Set<ApplicationBean> beanSet = new HashSet<>();
-    Set<ApplicationBean> aliveBeansSet = new HashSet<>();
-    getBeans(beans, beanSet);
-    getAliveBeans(frames, aliveBeansSet);
-    return getGarbage(aliveBeansSet, beanSet);
+    Set<ApplicationBean> beanSet;
+    Set<ApplicationBean> aliveBeanSet;
+    beanSet = getBeans(beans);
+    aliveBeanSet = getAliveBeans(frames);
+    return getGarbage(aliveBeanSet, beanSet);
   }
 
-  private void getBeans(final Map<String, ApplicationBean> beans, Set<ApplicationBean> beanSet) {
+  private Set<ApplicationBean> getBeans(final Map<String, ApplicationBean> beans) {
+    Set<ApplicationBean> beanSet = new HashSet<>();
     for (Map.Entry<String, ApplicationBean> beanEntry : beans.entrySet()) {
         beanSet.add(beanEntry.getValue());
     }
+    return beanSet;
   }
 
-  private void getAliveBeans(final Deque<StackInfo.Frame> frames, Set<ApplicationBean> aliveBeanSet) {
+  private Set <ApplicationBean> getAliveBeans(final Deque<StackInfo.Frame> frames) {
+    Set<ApplicationBean> aliveBeanSet = new HashSet<>();
     for (StackInfo.Frame frame : frames) {
       for (ApplicationBean applicationBean : frame.getParameters()) {
         getChild(applicationBean, aliveBeanSet);
       }
     }
+    return aliveBeanSet;
   }
 
   private Set<ApplicationBean> getChild(ApplicationBean bean, Set<ApplicationBean> aliveBeansSet) {
