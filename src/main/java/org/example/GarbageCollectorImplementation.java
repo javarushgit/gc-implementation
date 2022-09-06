@@ -12,7 +12,7 @@ public class GarbageCollectorImplementation implements GarbageCollector {
     Map<String, ApplicationBean> beans = heap.getBeans();
     Deque<StackInfo.Frame> frames = stack.getStack();
     Set<ApplicationBean> aliveBeans = getAliveBeans(frames);
-    Set<ApplicationBean> aliveHeapBeans = getAliveBeansFromHeap(beans);
+    Set<ApplicationBean> aliveHeapBeans = getHeapBeans(beans);
     ArrayList<ApplicationBean> garbageList = new ArrayList<>();
     for (ApplicationBean bean : aliveHeapBeans) {
       if (!aliveBeans.contains(bean)){
@@ -34,7 +34,7 @@ public class GarbageCollectorImplementation implements GarbageCollector {
     return aliveBeans;
   }
 
-  public Set<ApplicationBean> getAliveBeansFromHeap(Map<String, ApplicationBean> beans) {
+  public Set<ApplicationBean> getHeapBeans(Map<String, ApplicationBean> beans) {
     Set<ApplicationBean> aliveBeans = new HashSet<>();
     for (Map.Entry<String, ApplicationBean> bean :
             beans.entrySet()) {
@@ -42,15 +42,15 @@ public class GarbageCollectorImplementation implements GarbageCollector {
         aliveBeans.addAll(getRelation(frame, aliveBeans));
     }
     return aliveBeans;
+    
   }
   private Set<ApplicationBean> getRelation(ApplicationBean bean, Set<ApplicationBean> beanSet) {
-    if (!beanSet.contains(bean)){
+    if (!beanSet.contains(bean)) {
       beanSet.add(bean);
-      for(Map.Entry<String, ApplicationBean> beanEntry : bean.getFieldValues().entrySet()){
+      for(Map.Entry<String, ApplicationBean> beanEntry : bean.getFieldValues().entrySet()) {
         getRelation(beanEntry.getValue(), beanSet);
       }
     }
     return beanSet;
-
   }
 }
