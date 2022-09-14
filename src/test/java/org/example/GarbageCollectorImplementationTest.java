@@ -1,12 +1,12 @@
 package org.example;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 
 class GarbageCollectorImplementationTest {
@@ -15,10 +15,9 @@ class GarbageCollectorImplementationTest {
 
     @Test
     public void unlinkedObjectsCollectionTest() {
-        // GIVEN
+        // GIVEN  компоненты приложений
         final ApplicationBean restControllerBean = initializeControllerBean();
         final ApplicationBean requestBean = initializeHttpRequestBeanBean();
-
         Map<String, ApplicationBean> heap = new HashMap<>();
         heap.putAll(getMemoryFootprint("controller", restControllerBean));
         heap.putAll(getMemoryFootprint("request", requestBean));
@@ -30,6 +29,7 @@ class GarbageCollectorImplementationTest {
         stack.push("handleRequest", restControllerBean);
 
         // WHEN
+
         final List<ApplicationBean> actualGarbage = gc.collect(heapInfo, stack);
 
         // THEN
@@ -163,8 +163,7 @@ class GarbageCollectorImplementationTest {
         serviceA.addRelation("serviceB", serviceB);
         serviceB.addRelation("serviceA", serviceA);
 
-        Map<String, ApplicationBean> heap =
-            new HashMap<>(getMemoryFootprint("controller", restControllerBean));
+        Map<String, ApplicationBean> heap = new HashMap<>(getMemoryFootprint("controller", restControllerBean));
         heap.put("serviceA", serviceA);
         heap.put("serviceB", serviceB);
 
@@ -189,7 +188,7 @@ class GarbageCollectorImplementationTest {
         Assertions.assertEquals(expectedGarbage.size(), actualGarbage.size());
         Assertions.assertTrue(actualGarbage.containsAll(expectedGarbage));
     }
-    
+
     @Test
     public void multiCircularDependencyTest() {
         // GIVEN
@@ -237,6 +236,10 @@ class GarbageCollectorImplementationTest {
     }
 
     private ApplicationBean initializeHttpRequestBeanBean() {
+        //         создаем объект -запрос Боба
+        //         куда кладем пустой объект "заголовок" под ключем "headers"
+        //     куда кладем пустой объект "тело" под ключем "body"
+
         final ApplicationBean requestBean = new ApplicationBean();
         final ApplicationBean headers = new ApplicationBean();
         final ApplicationBean body = new ApplicationBean();
@@ -270,6 +273,7 @@ class GarbageCollectorImplementationTest {
         return repository;
     }
 
+    //  получаем объем памяти из кучи
     private Map<String, ApplicationBean> getMemoryFootprint(String beanName, ApplicationBean bean) {
         Map<String, ApplicationBean> heap = new HashMap<>();
         heap.put(beanName, bean);
@@ -287,12 +291,11 @@ class GarbageCollectorImplementationTest {
     private List<ApplicationBean> getChildren(ApplicationBean bean) {
         List<ApplicationBean> garbage = new ArrayList<>();
         garbage.add(bean);
-        bean.getFieldValues()
-            .forEach(
-                (key, value) -> {
-                    garbage.addAll(getChildren(value));
-                });
+        bean.getFieldValues().forEach((key, value) -> {
+            garbage.addAll(getChildren(value));
+        });
 
         return garbage;
     }
+
 }
