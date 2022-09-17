@@ -1,6 +1,8 @@
 package org.example;
 
 
+
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -12,12 +14,18 @@ public class GarbageCollectorImplementation implements GarbageCollector {
     Deque<StackInfo.Frame> frames = stack.getStack();
 
 
+
+
+
+
     List<ApplicationBean> listAppBeansFirstLevel = stack.getAllApplicationsFromFrameFirstLevel(frames);
-    List<ApplicationBean> listAppBeansWithReferences = stack.getAllAppBean(listAppBeansFirstLevel);
+
+
+    List <ApplicationBean> listChain = new ArrayList<>();
+    List<ApplicationBean> listAppBeansWithReferences = stack.getAllAppBean(listAppBeansFirstLevel);//////////////////////
 
     List<ApplicationBean> result = beans
             .values().stream().filter(el -> !listAppBeansWithReferences.contains(el)).collect(Collectors.toList());
-
 
 
     return result;

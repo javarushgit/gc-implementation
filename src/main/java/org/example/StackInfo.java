@@ -43,22 +43,26 @@ public class StackInfo {
         return result;
     }
 
-    List<ApplicationBean> getAllAppBean(List<ApplicationBean> listPreviousLevel) {
-        Set<ApplicationBean> set = new HashSet<>();
-        for (ApplicationBean applicationBean : listPreviousLevel) {
-            List<ApplicationBean> listCurrentlyLevel = applicationBean.
-                    getFieldValues().values().stream().filter(Objects::nonNull).collect(Collectors.toList());
-            List<ApplicationBean> listNextLevel = null;
-            if (listCurrentlyLevel.size() > 0) {
-               listNextLevel = getAllAppBean(listCurrentlyLevel);
-            }
-            if (listNextLevel != null) listCurrentlyLevel.addAll(listNextLevel);
-            set.addAll(listCurrentlyLevel);
-        }
-        set.addAll(listPreviousLevel);
 
-        return  new ArrayList<ApplicationBean>(set);
+    List<ApplicationBean> getAllAppBean(List<ApplicationBean> listPreviousLevel) {
+        List<ApplicationBean> result = getAplicationsInsideAplication(listPreviousLevel);
+        result.addAll(listPreviousLevel);
+        return result;
+
     }
+
+
+    List<ApplicationBean> getAplicationsInsideAplication(List<ApplicationBean> prev) {
+        List<ApplicationBean> result = new ArrayList<>();
+        for (ApplicationBean applicationBean : prev) {
+            result.addAll(applicationBean.getFieldValues().values());
+            List<ApplicationBean> listCurrentlyLevel = new ArrayList<>(applicationBean.
+                    getFieldValues().values());
+            if (listCurrentlyLevel.size() > 1) result.addAll(getAllAppBean(listCurrentlyLevel));
+        }
+        return result;
+    }
+
 
 }
 
