@@ -11,17 +11,10 @@ public class GarbageCollectorImplementation implements GarbageCollector {
         Map<String, ApplicationBean> beans = heap.getBeans();
         Deque<StackInfo.Frame> frames = stack.getStack();
 
-
-        List<ApplicationBean> listAppBeansFirstLevel = stack.getAllApplicationsFromFrameFirstLevel(frames);
-
-
-        List<ApplicationBean> listChain = new ArrayList<>();
-        List<ApplicationBean> listAppBeansWithReferences = getAllAppBean(listAppBeansFirstLevel, new ArrayList<>());//////////////////////
-
+        List<ApplicationBean> listAppBeansFirstLevel = getAllApplicationsFromFrameFirstLevel(frames);
+        List<ApplicationBean> listAppBeansWithReferences = getAllAppBean(listAppBeansFirstLevel, new ArrayList<>());
         List<ApplicationBean> result = beans
                 .values().stream().filter(el -> !listAppBeansWithReferences.contains(el)).collect(Collectors.toList());
-
-
         return result;
     }
 
@@ -35,26 +28,17 @@ public class GarbageCollectorImplementation implements GarbageCollector {
             chain.add(applicationBean);
             result.add(applicationBean);
             List<ApplicationBean> listCurrently = new ArrayList<>(applicationBean.getFieldValues().values());
-            if (listCurrently.isEmpty()) {
-                continue;
-            } else {
+            if (!listCurrently.isEmpty()) {
                 result.addAll(getAllAppBean(listCurrently, chain));
             }
-
         }
-
-
         return result;
-
-
     }
 
-
-//    List<ApplicationBean> getApplicationsForApplication(List<ApplicationBean> list, List<ApplicationBean> chain) {
-//
-//        List<ApplicationBean>
-//    }
-
-
+    List<ApplicationBean> getAllApplicationsFromFrameFirstLevel(Deque<StackInfo.Frame> frames) {
+        List<ApplicationBean> result = new ArrayList<>();
+        frames.forEach(el -> result.addAll(el.getParameters()));
+        return result;
+    }
 }
 
