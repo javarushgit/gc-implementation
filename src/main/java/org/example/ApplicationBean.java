@@ -5,7 +5,6 @@ import java.util.Map;
 
 public class ApplicationBean {
 
-  String beanName;
 
   private Map<String, ApplicationBean> fieldValues = new HashMap<>();
 

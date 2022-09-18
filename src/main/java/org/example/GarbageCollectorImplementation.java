@@ -18,10 +18,15 @@ public class GarbageCollectorImplementation implements GarbageCollector {
         return result;
     }
 
-    List<ApplicationBean> getAllAppBean(List<ApplicationBean> prev, List<ApplicationBean> chain) {
+    List<ApplicationBean> getAllApplicationsFromFrameFirstLevel(Deque<StackInfo.Frame> frames) {
         List<ApplicationBean> result = new ArrayList<>();
-        for (int i = 0; i < prev.size(); i++) {
-            ApplicationBean applicationBean = prev.get(i);
+        frames.forEach(frame -> result.addAll(frame.getParameters()));
+        return result;
+    }
+
+    List<ApplicationBean> getAllAppBean(List<ApplicationBean> previousList, List<ApplicationBean> chain) {
+        List<ApplicationBean> result = new ArrayList<>();
+        for (ApplicationBean applicationBean : previousList) {
             if (chain.contains(applicationBean)) {
                 return result;
             }
@@ -34,11 +39,4 @@ public class GarbageCollectorImplementation implements GarbageCollector {
         }
         return result;
     }
-
-    List<ApplicationBean> getAllApplicationsFromFrameFirstLevel(Deque<StackInfo.Frame> frames) {
-        List<ApplicationBean> result = new ArrayList<>();
-        frames.forEach(el -> result.addAll(el.getParameters()));
-        return result;
-    }
 }
-
