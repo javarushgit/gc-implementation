@@ -3,7 +3,8 @@ package org.example;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ApplicationBean { 
+public class ApplicationBean {
+
 
   private Map<String, ApplicationBean> fieldValues = new HashMap<>();
 
